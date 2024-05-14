@@ -45,7 +45,7 @@ func handleCompletions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"model":    "gpt-3.5-turbo",
+		"model":    "gpt-4-turbo",
 		"messages": []map[string]string{{"role": "user", "content": req.Prompt}},
 		"stream":   queryResult,
 	})
