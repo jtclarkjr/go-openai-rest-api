@@ -38,7 +38,7 @@ Text input to assistant voice response. use ChatGPT and Text to speech
 curl -X POST http://localhost:3000/chat/text_audio \
      -H "Content-Type: application/json" \
      -d '{
-           "prompt": "What is Boyer Moore algorithm?"
+           "prompt": "What is the meaning of the word Anagram?"
          }'
 ```
 
