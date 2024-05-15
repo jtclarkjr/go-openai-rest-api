@@ -62,7 +62,7 @@ Request body
 
 ```
 {
-  promp: "string"
+  prompt: "string"
 }
 ```
 
