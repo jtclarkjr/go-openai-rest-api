@@ -19,14 +19,18 @@ const (
 func main() {
 	r := chi.NewRouter()
 
-	// Text to text chat
-	r.Post("/chat/text", completionsController)
+	// Chat routes
+	r.Route("/chat", func(r chi.Router) {
 
-	// Audio to audio chat
-	r.Post("/chat/audio", voiceChatFromAudioController)
+		// Text to text chat
+		r.Post("/text", completionsController)
 
-	// Text to chat assistant audio
-	r.Post("/chat/text_audio", textVoiceChatController)
+		// Audio to audio chat
+		r.Post("/audio", voiceChatFromAudioController)
+
+		// Text to chat assistant audio
+		r.Post("/text_audio", textVoiceChatController)
+	})
 
 	// Text to speech
 	r.Post("/tts", ttsController)
