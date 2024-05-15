@@ -9,15 +9,29 @@ import (
 
 // OpenAI API details
 const (
-	openAIURL      = "https://api.openai.com/v1/chat/completions"
-	openAIImageURL = "https://api.openai.com/v1/images/generations"
-	apiKey         = "" // use os.Getenv("OPENAI_KEY")
-
+	openAIURL        = "https://api.openai.com/v1/chat/completions"
+	openAIImageURL   = "https://api.openai.com/v1/images/generations"
+	openAITTSURL     = "https://api.openai.com/v1/audio/speech"
+	openAIWhisperURL = "https://api.openai.com/v1/audio/transcriptions"
+	apiKey           = ""
 )
 
 func main() {
 	r := chi.NewRouter()
-	r.Post("/completions", completionsController)
+
+	// Text to text chat
+	r.Post("/chat/text", completionsController)
+
+	// Audio to audio chat
+	r.Post("/chat/audio", voiceChatFromAudioController)
+
+	// Text to chat assistant audio
+	r.Post("/chat/text_audio", textVoiceChatController)
+
+	// Text to speech
+	r.Post("/tts", ttsController)
+
+	// Text to image
 	r.Post("/image", imageController)
 
 	log.Println("Server starting on port 3000...")
