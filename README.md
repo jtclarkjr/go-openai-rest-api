@@ -46,6 +46,8 @@ curl -X POST http://localhost:3000/chat/text_audio \
 
 Text to speech. The text is converted in to speech in a audio file.
 
+`/tts`
+
 ```
 curl -X POST http://localhost:3000/tts \
      -H "Content-Type: application/json" \
