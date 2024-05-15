@@ -34,7 +34,7 @@ Response
 
 ```
 {
-  id: number
+  id: int
   prompt: string
   url: string
 }
