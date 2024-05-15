@@ -4,9 +4,9 @@ Go OpenAI REST API
 
 ## ChatGPT
 
-`GET /completions`
+`GET /chat/text`
 
-`GET /completions?stream="true"`
+`GET /chat/text?stream="true"`
 
 Request body
 
