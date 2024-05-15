@@ -1,6 +1,6 @@
-# go-openai
+# go-openai-rest-api
 
-Go OpenAI ChatGPT REST API
+Go OpenAI REST API
 
 ## ChatGPT
 
