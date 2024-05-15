@@ -6,7 +6,7 @@ Go OpenAI REST API
 
 `GET /completions`
 
-`GET /completions/stream`
+`GET /completions?stream="true"`
 
 Request body
 
