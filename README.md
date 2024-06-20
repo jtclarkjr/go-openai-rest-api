@@ -66,6 +66,14 @@ curl -X POST http://localhost:8080/stt \
      -F "audio=@./speech.mp3"
 ```
 
+### GET output file
+
+Dowloads output file that is saved from voice reponses
+
+```
+curl http://your-app-name.fly.dev/files/output.wav -o output.wav
+```
+
 ## Dalle
 
 `GET /image`
