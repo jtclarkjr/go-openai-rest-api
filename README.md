@@ -25,7 +25,7 @@ Audio to Audio. uses ChatGPT, Text to speech, and Whisper
 `/chat/voice`
 
 ```
-curl -X POST http://localhost:3000/chat/voice \
+curl -X POST http://localhost:8080/chat/voice \
      -H "Content-Type: multipart/form-data" \
      -F "audio=@speech.mp3"
 ```
@@ -35,7 +35,7 @@ Text input to assistant voice response. use ChatGPT and Text to speech
 `/chat/text_voice`
 
 ```
-curl -X POST http://localhost:3000/chat/text_audio \
+curl -X POST http://localhost:8080/chat/text_audio \
      -H "Content-Type: application/json" \
      -d '{
            "prompt": "What is Boyer Moore algorithm?"
@@ -47,11 +47,21 @@ curl -X POST http://localhost:3000/chat/text_audio \
 Text to speech. The text is converted in to speech in a audio file.
 
 ```
-curl -X POST http://localhost:3000/tts \
+curl -X POST http://localhost:8080/tts \
      -H "Content-Type: application/json" \
      -d '{
            "input": "Today is a wonderful day to build something people love!"
          }'
+```
+
+### Speech to text
+
+Speech to text by transcribing an audio file
+
+```
+curl -X POST http://localhost:8080/stt \
+     -H "Content-Type: multipart/form-data" \
+     -F "audio=@./speech.mp3"
 ```
 
 ## Dalle

@@ -35,9 +35,12 @@ func main() {
 	// Text to speech
 	r.Post("/tts", ttsController)
 
+	// Speech to text
+	r.Post("/stt", transcribeAudioController)
+
 	// Text to image
 	r.Post("/image", imageController)
 
-	log.Println("Server starting on port 3000...")
-	http.ListenAndServe(":3000", r)
+	log.Println("Server starting on port 8080...")
+	http.ListenAndServe(":8080", r)
 }
