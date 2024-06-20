@@ -4,9 +4,9 @@ Go OpenAI REST API
 
 ## ChatGPT
 
-`GET /completions`
+`GET /chat/text`
 
-`GET /completions?stream="true"`
+`GET /chat/text?stream="true"`
 
 Request body
 
@@ -38,13 +38,15 @@ Text input to assistant voice response. use ChatGPT and Text to speech
 curl -X POST http://localhost:8080/chat/text_audio \
      -H "Content-Type: application/json" \
      -d '{
-           "prompt": "What is Boyer Moore algorithm?"
+           "prompt": "What is the meaning of the word Anagram?"
          }'
 ```
 
 ### Text to speech
 
 Text to speech. The text is converted in to speech in a audio file.
+
+`/tts`
 
 ```
 curl -X POST http://localhost:8080/tts \
@@ -72,7 +74,7 @@ Request body
 
 ```
 {
-  promp: "string"
+  prompt: "string"
 }
 ```
 
