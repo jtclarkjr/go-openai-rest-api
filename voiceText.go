@@ -96,6 +96,7 @@ func transcribeAudioController(w http.ResponseWriter, r *http.Request) {
 }
 
 func transcribeAudio(filePath string) (string, error) {
+	apiKey := os.Getenv("API_KEY")
 	file, err := os.Open(filePath)
 	if err != nil {
 		return "", err

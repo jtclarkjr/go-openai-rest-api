@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -15,6 +16,7 @@ type ChatRequest struct {
 }
 
 func completionsController(w http.ResponseWriter, r *http.Request) {
+	apiKey := os.Getenv("API_KEY")
 	var req ChatRequest
 	stream := r.URL.Query().Get("stream")
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

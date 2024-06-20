@@ -8,13 +8,16 @@ import (
 )
 
 // OpenAI API details
+
 const (
 	openAIURL        = "https://api.openai.com/v1/chat/completions"
 	openAIImageURL   = "https://api.openai.com/v1/images/generations"
 	openAITTSURL     = "https://api.openai.com/v1/audio/speech"
 	openAIWhisperURL = "https://api.openai.com/v1/audio/transcriptions"
-	apiKey           = ""
+	// apiKey = "" // used on local only
 )
+
+// apiKey := os.Getenv("API_KEY") secret set on infra level
 
 func main() {
 	r := chi.NewRouter()
@@ -40,6 +43,11 @@ func main() {
 
 	// Text to image
 	r.Post("/image", imageController)
+
+	r.Get("/files/*", func(w http.ResponseWriter, r *http.Request) {
+		fs := http.FileServer(http.Dir("/data"))
+		http.StripPrefix("/files/", fs).ServeHTTP(w, r)
+	})
 
 	log.Println("Server starting on port 8080...")
 	http.ListenAndServe(":8080", r)

@@ -10,6 +10,7 @@ import (
 
 // ChatGPT voice assistant
 func textVoiceChatController(w http.ResponseWriter, r *http.Request) {
+	apiKey := os.Getenv("API_KEY")
 	var req ChatRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -103,7 +104,7 @@ func textVoiceChatController(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write audio data directly to file
-	audioFilePath := "./speech.mp3"
+	audioFilePath := "./data/output.wav"
 	out, err := os.Create(audioFilePath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
