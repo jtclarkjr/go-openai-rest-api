@@ -71,7 +71,7 @@ curl -X POST http://localhost:8080/stt \
 Dowloads output file that is saved from voice reponses
 
 ```
-curl http://your-app-name.fly.dev/files/output.wav -o output.wav
+curl http://localhost:8080/files/output.wav -o output.wav
 ```
 
 ## Dalle
