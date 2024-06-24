@@ -106,6 +106,5 @@ func textVoiceChatController(w http.ResponseWriter, r *http.Request) {
 	writeAudioDataToFile(w, ttsResp.Body, audioFilePath)
 
 	// Upload the file to S3
-	// https://fly.storage.tigris.dev/audio/output-voice.wav
 	uploadFileToS3(w, audioFilePath, "output-voice.wav")
 }
