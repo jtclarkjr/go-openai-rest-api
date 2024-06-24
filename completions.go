@@ -6,17 +6,10 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 )
 
-// ChatRequest struct to parse incoming requests
-type ChatRequest struct {
-	Prompt string `json:"prompt"`
-}
-
 func completionsController(w http.ResponseWriter, r *http.Request) {
-	apiKey := os.Getenv("API_KEY")
 	var req ChatRequest
 	stream := r.URL.Query().Get("stream")
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

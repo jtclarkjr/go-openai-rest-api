@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-	"os"
 )
 
 // ImageRequest struct to parse incoming image generation requests
@@ -20,7 +19,6 @@ type ImageResponse struct {
 }
 
 func imageController(w http.ResponseWriter, r *http.Request) {
-	apiKey := os.Getenv("API_KEY")
 	var req ImageRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)

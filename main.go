@@ -1,26 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 )
-
-// OpenAI API details
-
-const (
-	openAIURL        = "https://api.openai.com/v1/chat/completions"
-	openAIImageURL   = "https://api.openai.com/v1/images/generations"
-	openAITTSURL     = "https://api.openai.com/v1/audio/speech"
-	openAIWhisperURL = "https://api.openai.com/v1/audio/transcriptions"
-	// apiKey = "" // used on local only
-)
-
-// apiKey := os.Getenv("API_KEY") secret set on infra level
 
 func main() {
 	r := chi.NewRouter()
+	r.Use(middleware.Logger)
 
 	// Chat routes
 	r.Route("/chat", func(r chi.Router) {
@@ -44,9 +35,17 @@ func main() {
 	// Text to image
 	r.Post("/image", imageController)
 
+	// serves from server
 	r.Get("/files/*", func(w http.ResponseWriter, r *http.Request) {
 		fs := http.FileServer(http.Dir("/data"))
 		http.StripPrefix("/files/", fs).ServeHTTP(w, r)
+	})
+
+	// serves from storage bucket
+	r.Get("/audio/*", func(w http.ResponseWriter, r *http.Request) {
+		path := chi.URLParam(r, "*")
+		s3URL := fmt.Sprintf("%s/audio/%s", bucketUrl, path)
+		http.Redirect(w, r, s3URL, http.StatusFound)
 	})
 
 	log.Println("Server starting on port 8080...")

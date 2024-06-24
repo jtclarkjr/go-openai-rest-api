@@ -5,21 +5,10 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"os"
 )
 
-type TTSInput struct {
-	Input string `json:"input"`
-}
-
-type TTSRequest struct {
-	Model string `json:"model"`
-	Voice string `json:"voice"`
-	Input string `json:"input"`
-}
-
 func ttsController(w http.ResponseWriter, r *http.Request) {
-	apiKey := os.Getenv("API_KEY")
+
 	var input TTSInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -63,20 +52,9 @@ func ttsController(w http.ResponseWriter, r *http.Request) {
 
 	// Write audio data directly to file
 	audioFilePath := "./data/output.wav"
-	out, err := os.Create(audioFilePath)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer out.Close()
+	writeAudioDataToFile(w, resp.Body, audioFilePath)
 
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Send response with file path
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"file": audioFilePath})
+	// Upload the file to S3
+	// https://fly.storage.tigris.dev/audio/output-tts.wav
+	uploadFileToS3(w, audioFilePath, "output-voice.wav")
 }
