@@ -78,7 +78,7 @@ Dowloads output file that is saved from voice reponses
 curl http://localhost:8080/files/output.wav -o output.wav
 ```
 
-## Images (DALL·E 3 via SDK)
+## Images (GPT image 1 via SDK)
 
 `POST /image`
 
