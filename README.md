@@ -107,3 +107,33 @@ Set `OPENAI_API_KEY` for all endpoints.
 ## Notes
 
 This service now uses the official OpenAI Go SDK v2 for chat, images, speech synthesis, and transcription.
+
+## Docker Compose
+
+Run the API with Docker Compose (uses `docker-compose.yml`):
+
+1. Create an `.envrc` (or `.env`) file in the project root (loaded via `env_file`). Example:
+
+```
+API_KEY=sk-your-openai-key
+BUCKET_NAME=your-bucket
+AWS_ENDPOINT_URL_S3=https://s3.amazonaws.com
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your-access-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
+```
+
+2. Start the service:
+
+```
+docker compose up --build
+```
+
+3. Access the API at `http://localhost:8080`.
+4. Generated audio files appear in `./data` (mounted into the container at `/data`).
+
+To rebuild after code changes:
+
+```
+docker compose build app && docker compose up -d
+```
