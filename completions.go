@@ -1,12 +1,14 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
+	"time"
+
+	openai "github.com/openai/openai-go/v2"
 )
 
 func completionsController(w http.ResponseWriter, r *http.Request) {
@@ -23,52 +25,56 @@ func completionsController(w http.ResponseWriter, r *http.Request) {
 		queryResult = false
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"model":    "gpt-4o",
-		"messages": []map[string]string{{"role": "user", "content": req.Prompt}},
-		"stream":   queryResult,
-	})
+	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Minute)
+	defer cancel()
 
-	log.Println(stream)
-	if err != nil {
-		http.Error(w, "Failed to encode request body", http.StatusInternalServerError)
-		return
-	}
-
-	httpReq, err := http.NewRequest("POST", openAIURL, bytes.NewBuffer(body))
-	if err != nil {
-		http.Error(w, "Failed to create request to OpenAI", http.StatusInternalServerError)
-		return
-	}
-	httpReq.Header.Set("Authorization", "Bearer "+apiKey)
-	httpReq.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(httpReq)
-	if err != nil {
-		http.Error(w, "Failed to get response from OpenAI", http.StatusInternalServerError)
-		return
-	}
-	defer resp.Body.Close()
-
-	// Set header for chunked transfer
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	reader := bufio.NewReader(resp.Body)
-	buffer := make([]byte, 1024)
-	for {
-		n, err := reader.Read(buffer)
-		if n > 0 {
-			_, writeErr := w.Write(buffer[:n])
-			if writeErr != nil {
-				log.Println("Error writing to response:", writeErr)
-				return
-			}
-			w.(http.Flusher).Flush()
-		}
+	if !queryResult { // non-streaming simple completion
+		completion, err := openAIClient.Chat.Completions.New(ctx, openai.ChatCompletionNewParams{
+			Messages: []openai.ChatCompletionMessageParamUnion{
+				openai.UserMessage(req.Prompt),
+			},
+			Model: openai.ChatModelGPT5,
+		})
 		if err != nil {
-			break
+			http.Error(w, "OpenAI error: "+err.Error(), http.StatusInternalServerError)
+			return
 		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"content": completion.Choices[0].Message.Content,
+		})
+		return
+	}
+
+	streamResp := openAIClient.Chat.Completions.NewStreaming(ctx, openai.ChatCompletionNewParams{
+		Messages: []openai.ChatCompletionMessageParamUnion{openai.UserMessage(req.Prompt)},
+		Model:    openai.ChatModelGPT5,
+	})
+	defer streamResp.Close()
+
+	w.Header().Set("Content-Type", "application/json")
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
+		return
+	}
+
+	acc := openai.ChatCompletionAccumulator{}
+	for streamResp.Next() {
+		chunk := streamResp.Current()
+		acc.AddChunk(chunk)
+		if len(chunk.Choices) > 0 {
+			delta := chunk.Choices[0].Delta.Content
+			if delta != "" {
+				// Send SSE-like JSON lines (not official SSE)
+				payload, _ := json.Marshal(map[string]string{"delta": delta})
+				w.Write(payload)
+				w.Write([]byte("\n"))
+				flusher.Flush()
+			}
+		}
+	}
+	if streamResp.Err() != nil {
+		log.Println("stream error:", streamResp.Err())
 	}
 }

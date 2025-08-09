@@ -1,10 +1,13 @@
 package main
 
 import (
-	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
+	"time"
+
+	"github.com/openai/openai-go/v2"
 )
 
 func ttsController(w http.ResponseWriter, r *http.Request) {
@@ -15,44 +18,30 @@ func ttsController(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req := TTSRequest{
-		Model: "tts-1",
-		Voice: "shimmer",
+	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Minute)
+	defer cancel()
+
+	// Using SDK speech endpoint (returns http.Response)
+	speechResp, err := openAIClient.Audio.Speech.New(ctx, openai.AudioSpeechNewParams{
+		Model: openai.SpeechModel("gpt-4o-mini-tts"), // TTS capable model
 		Input: input.Input,
-	}
-
-	// Prepare the request to OpenAI API
-	body, err := json.Marshal(req)
+		Voice: openai.AudioSpeechNewParamsVoice("shimmer"),
+		// default format (mp3 or wav depending on API defaults)
+	})
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "TTS error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	client := &http.Client{}
-	openAIReq, err := http.NewRequest("POST", openAITTSURL, bytes.NewBuffer(body))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	openAIReq.Header.Set("Content-Type", "application/json")
-	openAIReq.Header.Set("Authorization", "Bearer "+apiKey)
-
-	resp, err := client.Do(openAIReq)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		http.Error(w, string(bodyBytes), resp.StatusCode)
+	defer speechResp.Body.Close()
+	if speechResp.StatusCode != http.StatusOK {
+		b, _ := io.ReadAll(speechResp.Body)
+		http.Error(w, string(b), speechResp.StatusCode)
 		return
 	}
 
 	// Write audio data directly to file
 	audioFilePath := "./data/output.wav"
-	writeAudioDataToFile(w, resp.Body, audioFilePath)
+	writeAudioDataToFile(w, speechResp.Body, audioFilePath)
 
 	// Upload the file to S3
 	uploadFileToS3(w, audioFilePath, "output-voice.wav")

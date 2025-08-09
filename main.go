@@ -4,17 +4,28 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	"github.com/jtclarkjr/router-go"
+	"github.com/jtclarkjr/router-go/middleware"
 )
 
 func main() {
-	r := chi.NewRouter()
+	r := router.NewRouter()
 	r.Use(middleware.Logger)
+	r.Use(middleware.RateLimiter)
+	r.Use(middleware.Throttle(100))
+	r.Use(middleware.EnvVarChecker(
+		"OPENAI_API_KEY",
+		"BUCKET_NAME",
+		"AWS_ENDPOINT_URL_S3",
+		"AWS_REGION",
+		"AWS_ACCESS_KEY_ID",
+		"AWS_SECRET_ACCESS_KEY",
+	))
 
 	// Chat routes
-	r.Route("/chat", func(r chi.Router) {
+	r.Route("/chat", func(r *router.Router) {
 
 		// Text to text chat
 		r.Post("/text", completionsController)
@@ -41,9 +52,8 @@ func main() {
 		http.StripPrefix("/files/", fs).ServeHTTP(w, r)
 	})
 
-	// serves from storage bucket
 	r.Get("/audio/*", func(w http.ResponseWriter, r *http.Request) {
-		path := chi.URLParam(r, "*")
+		path := strings.TrimPrefix(r.URL.Path, "/audio/")
 		s3URL := fmt.Sprintf("%s/audio/%s", bucketUrl, path)
 		http.Redirect(w, r, s3URL, http.StatusFound)
 	})

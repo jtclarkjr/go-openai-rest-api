@@ -1,9 +1,12 @@
 package main
 
 import (
-	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
+	"time"
+
+	"github.com/openai/openai-go/v2"
 )
 
 // ImageRequest struct to parse incoming image generation requests
@@ -25,51 +28,28 @@ func imageController(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"model":      "dall-e-3",
-		"prompt":     req.Prompt,
-		"num_images": 1,
-		"size":       "1024x1024",
+	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Minute)
+	defer cancel()
+
+	imgResp, err := openAIClient.Images.Generate(ctx, openai.ImageGenerateParams{
+		Model:  openai.ImageModelDallE3,
+		Prompt: req.Prompt,
+		Size:   openai.ImageGenerateParamsSize("1024x1024"),
+		N:      openai.Int(1),
 	})
-
 	if err != nil {
-		http.Error(w, "Failed to encode request body", http.StatusInternalServerError)
+		http.Error(w, "Failed to generate image: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	httpReq, err := http.NewRequest("POST", openAIImageURL, bytes.NewBuffer(body))
-	if err != nil {
-		http.Error(w, "Failed to create request to OpenAI", http.StatusInternalServerError)
+	if len(imgResp.Data) == 0 {
+		http.Error(w, "No image returned", http.StatusInternalServerError)
 		return
 	}
-	httpReq.Header.Set("Authorization", "Bearer "+apiKey)
-	httpReq.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(httpReq)
-	if err != nil {
-		http.Error(w, "Failed to get response from OpenAI", http.StatusInternalServerError)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		http.Error(w, "Failed to generate image", resp.StatusCode)
-		return
-	}
-
-	var result map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		http.Error(w, "Failed to decode response from OpenAI", http.StatusInternalServerError)
-		return
-	}
-
-	// Extract the necessary fields and create the custom response
-	data := result["data"].([]interface{})[0].(map[string]interface{})
+	d := imgResp.Data[0]
 	customResponse := ImageResponse{
-		ID:            int(result["created"].(float64)),
-		RevisedPrompt: data["revised_prompt"].(string),
-		URL:           data["url"].(string),
+		ID:            int(imgResp.Created),
+		RevisedPrompt: d.RevisedPrompt,
+		URL:           d.URL,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

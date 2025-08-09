@@ -9,14 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-)
-
-// URLS
-const (
-	openAIURL        = "https://api.openai.com/v1/chat/completions"
-	openAIImageURL   = "https://api.openai.com/v1/images/generations"
-	openAITTSURL     = "https://api.openai.com/v1/audio/speech"
-	openAIWhisperURL = "https://api.openai.com/v1/audio/transcriptions"
+	"github.com/openai/openai-go/v2"
+	"github.com/openai/openai-go/v2/option"
 )
 
 // Bucket
@@ -31,7 +25,7 @@ var (
 	bucketKey    = os.Getenv("AWS_SECRET_ACCESS_KEY")
 )
 
-var apiKey = os.Getenv("API_KEY")
+var openAIClient openai.Client
 
 type MediaFile struct {
 	ID       string `json:"id"`
@@ -74,4 +68,8 @@ func init() {
 	}
 
 	s3Service = s3.New(s3Session)
+
+	// Initialize OpenAI client
+	openai_key := os.Getenv("OPENAI_API_KEY")
+	openAIClient = openai.NewClient(option.WithAPIKey(openai_key))
 }

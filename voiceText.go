@@ -2,14 +2,17 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
-	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
+
+	"github.com/openai/openai-go/v2"
 )
 
 func voiceChatFromAudioController(w http.ResponseWriter, r *http.Request) {
@@ -91,48 +94,22 @@ func transcribeAudioController(w http.ResponseWriter, r *http.Request) {
 }
 
 func transcribeAudio(filePath string) (string, error) {
-	file, err := os.Open(filePath)
+	f, err := os.Open(filePath)
 	if err != nil {
 		return "", err
 	}
-	defer file.Close()
+	defer f.Close()
 
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile("file", filepath.Base(file.Name()))
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+
+	// openai.File helper to set filename & type
+	resp, err := openAIClient.Audio.Transcriptions.New(ctx, openai.AudioTranscriptionNewParams{
+		Model: "whisper-1",
+		File:  openai.File(f, filepath.Base(filePath), "audio/mpeg"),
+	})
 	if err != nil {
 		return "", err
 	}
-	_, err = io.Copy(part, file)
-	if err != nil {
-		return "", err
-	}
-	writer.WriteField("model", "whisper-1")
-	writer.Close()
-
-	req, err := http.NewRequest("POST", openAIWhisperURL, body)
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Content-Type", writer.FormDataContentType())
-	req.Header.Set("Authorization", "Bearer "+apiKey)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return "", fmt.Errorf("failed to transcribe audio: %s", string(bodyBytes))
-	}
-
-	var whisperResp WhisperResponse
-	if err := json.NewDecoder(resp.Body).Decode(&whisperResp); err != nil {
-		return "", err
-	}
-
-	return whisperResp.Text, nil
+	return resp.Text, nil
 }

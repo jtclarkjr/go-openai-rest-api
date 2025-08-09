@@ -2,11 +2,11 @@
 
 Go OpenAI REST API
 
-## ChatGPT
+## Chat (GPT-5 via SDK)
 
-`GET /chat/text`
+`POST /chat/text`
 
-`GET /chat/text?stream="true"`
+`POST /chat/text?stream=true` (newline-delimited JSON chunks: {"delta":"..."})
 
 Request body
 
@@ -16,13 +16,19 @@ Request body
 }
 ```
 
-Response is same as [OpenAI Response](https://platform.openai.com/docs/api-reference/making-requests)
+Non-stream response:
+
+```
+{ "content": "..." }
+```
+
+Streaming: each line is JSON with a delta field until completion.
 
 ## VoiceGPT
 
 Audio to Audio. uses ChatGPT, Text to speech, and Whisper
 
-`/chat/voice`
+`/chat/voice` (audio -> text -> GPT-5 -> speech)
 
 ```
 curl -X POST http://localhost:8080/chat/voice \
@@ -32,7 +38,7 @@ curl -X POST http://localhost:8080/chat/voice \
 
 Text input to assistant voice response. use ChatGPT and Text to speech
 
-`/chat/text_voice`
+`/chat/text_voice` (text -> GPT-5 -> speech)
 
 ```
 curl -X POST http://localhost:8080/chat/text_audio \
@@ -42,11 +48,9 @@ curl -X POST http://localhost:8080/chat/text_audio \
          }'
 ```
 
-### Text to speech
+### Text to speech (SDK Audio.Speech)
 
-Text to speech. The text is converted in to speech in a audio file.
-
-`/tts`
+`POST /tts`
 
 ```
 curl -X POST http://localhost:8080/tts \
@@ -56,9 +60,9 @@ curl -X POST http://localhost:8080/tts \
          }'
 ```
 
-### Speech to text
+### Speech to text (SDK Audio.Transcriptions)
 
-Speech to text by transcribing an audio file
+Transcribes an audio file using whisper-1.
 
 ```
 curl -X POST http://localhost:8080/stt \
@@ -74,9 +78,9 @@ Dowloads output file that is saved from voice reponses
 curl http://localhost:8080/files/output.wav -o output.wav
 ```
 
-## Dalle
+## Images (DALL·E 3 via SDK)
 
-`GET /image`
+`POST /image`
 
 Request body
 
@@ -90,8 +94,16 @@ Response
 
 ```
 {
-  id: int
-  prompt: string
-  url: string
+  "id": 1723223344,
+  "prompt": "...possibly revised...",
+  "url": "https://..."
 }
 ```
+
+## Environment
+
+Set `OPENAI_API_KEY` for all endpoints.
+
+## Notes
+
+This service now uses the official OpenAI Go SDK v2 for chat, images, speech synthesis, and transcription.
