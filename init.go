@@ -35,6 +35,7 @@ type MediaFile struct {
 
 type TTSInput struct {
 	Input string `json:"input"`
+	Voice string `json:"voice,omitempty"`
 }
 
 type TTSRequest struct {
@@ -49,6 +50,7 @@ type WhisperResponse struct {
 
 type ChatRequest struct {
 	Prompt string `json:"prompt"`
+	Voice  string `json:"voice,omitempty"`
 }
 
 func init() {

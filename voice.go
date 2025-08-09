@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -35,11 +36,17 @@ func textVoiceChatController(w http.ResponseWriter, r *http.Request) {
 	}
 	completionText := completion.Choices[0].Message.Content
 
+	// Determine voice (default shimmer). Accepts: alloy, ash, ballad, coral, echo, sage, shimmer, verse
+	voice := req.Voice
+	if voice == "" {
+		voice = "shimmer"
+	}
+
 	// TTS via SDK
 	speechResp, err := openAIClient.Audio.Speech.New(ctx, openai.AudioSpeechNewParams{
 		Model: openai.SpeechModel("gpt-4o-mini-tts"),
 		Input: completionText,
-		Voice: openai.AudioSpeechNewParamsVoice("shimmer"),
+		Voice: openai.AudioSpeechNewParamsVoice(voice),
 	})
 	if err != nil {
 		http.Error(w, "TTS error: "+err.Error(), http.StatusInternalServerError)
@@ -51,9 +58,12 @@ func textVoiceChatController(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, string(b), speechResp.StatusCode)
 		return
 	}
-	audioFilePath := "./data/output.wav"
+	// Timestamped filename
+	timestamp := time.Now().Unix()
+	fileName := fmt.Sprintf("output-voice-%d.wav", timestamp)
+	audioFilePath := fmt.Sprintf("./data/%s", fileName)
 	writeAudioDataToFile(w, speechResp.Body, audioFilePath)
 
-	// Upload the file to S3
-	uploadFileToS3(w, audioFilePath, "output-voice.wav")
+	// Upload the file to S3 with timestamped key
+	uploadFileToS3(w, audioFilePath, fileName)
 }
