@@ -32,7 +32,7 @@ func imageController(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	imgResp, err := openAIClient.Images.Generate(ctx, openai.ImageGenerateParams{
-		Model:  openai.ImageModelDallE3,
+		Model:  openai.ImageModelGPTImage1,
 		Prompt: req.Prompt,
 		Size:   openai.ImageGenerateParamsSize("1024x1024"),
 		N:      openai.Int(1),

@@ -115,7 +115,7 @@ Run the API with Docker Compose (uses `docker-compose.yml`):
 1. Create an `.envrc` (or `.env`) file in the project root (loaded via `env_file`). Example:
 
 ```
-API_KEY=sk-your-openai-key
+OPENAI_API_KEY=sk-your-openai-key
 BUCKET_NAME=your-bucket
 AWS_ENDPOINT_URL_S3=https://s3.amazonaws.com
 AWS_REGION=us-east-1
