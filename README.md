@@ -11,42 +11,27 @@ Go OpenAI REST API
 Request body
 
 ```
-{
-```
-
-Optional voice (defaults to shimmer). Supported voices:
-
-```
-alloy, ash, ballad, coral, echo, sage, shimmer, verse
-```
-
-Example specifying a voice:
-
-```
-curl -X POST http://localhost:8080/tts \
-  -H "Content-Type: application/json" \
-  -d '{
-        "input": "Custom voice example.",
-        "voice": "alloy"
-      }'
-```
-
-prompt: "string"
-}
-
+{ "prompt": "string" }
 ```
 
 Non-stream response:
 
+## Voice Parameter
+
+Optional `"voice"` field (default: `shimmer`) on endpoints that return audio (`/tts`, `/chat/text_audio`).
+
+Voices: `alloy | ash | ballad | coral | echo | sage | shimmer | verse`
+
+Example body:
+
 ```
 
-{ "content": "..." }
+{ "input" : "Hello world", "voice": "alloy" }
 
 ```
-
-Streaming: each line is JSON with a delta field until completion.
 
 ## VoiceGPT
+
 Optional voice parameter on this endpoint as well:
 
 ```
@@ -189,6 +174,8 @@ To rebuild after code changes:
 ```
 
 docker compose build app && docker compose up -d
+
+```
 
 ```
 
