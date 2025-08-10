@@ -44,7 +44,7 @@ func main() {
 	r.Post("/stt", transcribeToAudio)
 
 	// Text to image
-	r.Post("/image", imageController)
+	r.Post("/image", imageGenerate)
 
 	// serves from server
 	r.Get("/files/*", func(w http.ResponseWriter, r *http.Request) {

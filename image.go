@@ -21,7 +21,7 @@ type ImageResponse struct {
 	URL           string `json:"url"`
 }
 
-func imageController(w http.ResponseWriter, r *http.Request) {
+func imageGenerate(w http.ResponseWriter, r *http.Request) {
 	var req ImageRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
