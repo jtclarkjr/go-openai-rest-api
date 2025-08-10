@@ -28,20 +28,20 @@ func main() {
 	r.Route("/chat", func(r *router.Router) {
 
 		// Text to text chat
-		r.Post("/text", completionsController)
+		r.Post("/text", completions)
 
 		// Audio to audio chat
-		r.Post("/audio", voiceChatFromAudioController)
+		r.Post("/audio", voiceChatFromAudio)
 
 		// Text to chat assistant audio
-		r.Post("/text_audio", textVoiceChatController)
+		r.Post("/text_audio", textVoiceChat)
 	})
 
 	// Text to speech
 	r.Post("/tts", ttsController)
 
 	// Speech to text
-	r.Post("/stt", transcribeAudioController)
+	r.Post("/stt", transcribeToAudio)
 
 	// Text to image
 	r.Post("/image", imageController)

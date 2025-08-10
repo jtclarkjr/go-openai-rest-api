@@ -15,7 +15,7 @@ import (
 	"github.com/openai/openai-go/v2"
 )
 
-func voiceChatFromAudioController(w http.ResponseWriter, r *http.Request) {
+func voiceChatFromAudio(w http.ResponseWriter, r *http.Request) {
 	file, _, err := r.FormFile("audio")
 	if err != nil {
 		http.Error(w, "Failed to get audio file from request", http.StatusBadRequest)
@@ -37,7 +37,7 @@ func voiceChatFromAudioController(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	text, err := transcribeAudio(tempFile.Name())
+	text, err := transcribeAudioFile(tempFile.Name())
 	if err != nil {
 		http.Error(w, "Failed to transcribe audio", http.StatusInternalServerError)
 		return
@@ -52,10 +52,10 @@ func voiceChatFromAudioController(w http.ResponseWriter, r *http.Request) {
 	}
 
 	r.Body = io.NopCloser(bytes.NewBuffer(jsonReq))
-	textVoiceChatController(w, r)
+	textVoiceChat(w, r)
 }
 
-func transcribeAudioController(w http.ResponseWriter, r *http.Request) {
+func transcribeToAudio(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(10 << 20) // 10 MB
 	if err != nil {
 		http.Error(w, "Failed to parse form data", http.StatusBadRequest)
@@ -83,7 +83,7 @@ func transcribeAudioController(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	transcribedText, err := transcribeAudio(tempFile.Name())
+	transcribedText, err := transcribeAudioFile(tempFile.Name())
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error transcribing audio: %v", err), http.StatusInternalServerError)
 		return
@@ -93,7 +93,7 @@ func transcribeAudioController(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"text": transcribedText})
 }
 
-func transcribeAudio(filePath string) (string, error) {
+func transcribeAudioFile(filePath string) (string, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
 		return "", err
@@ -105,7 +105,7 @@ func transcribeAudio(filePath string) (string, error) {
 
 	// openai.File helper to set filename & type
 	resp, err := openAIClient.Audio.Transcriptions.New(ctx, openai.AudioTranscriptionNewParams{
-		Model: "whisper-1",
+		Model: "gpt-4o-mini-transcribe",
 		File:  openai.File(f, filepath.Base(filePath), "audio/mpeg"),
 	})
 	if err != nil {

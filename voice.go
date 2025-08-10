@@ -12,7 +12,7 @@ import (
 )
 
 // ChatGPT voice assistant
-func textVoiceChatController(w http.ResponseWriter, r *http.Request) {
+func textVoiceChat(w http.ResponseWriter, r *http.Request) {
 	var req ChatRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)

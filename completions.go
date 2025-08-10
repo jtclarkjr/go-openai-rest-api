@@ -11,7 +11,7 @@ import (
 	openai "github.com/openai/openai-go/v2"
 )
 
-func completionsController(w http.ResponseWriter, r *http.Request) {
+func completions(w http.ResponseWriter, r *http.Request) {
 	var req ChatRequest
 	stream := r.URL.Query().Get("stream")
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
