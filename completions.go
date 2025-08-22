@@ -11,6 +11,19 @@ import (
 	openai "github.com/openai/openai-go/v2"
 )
 
+// completions handles chat completion requests
+// @Summary Generate chat completion
+// @Description Generate a chat completion using OpenAI's GPT-5 model. Supports both streaming and non-streaming responses.
+// @Tags chat
+// @Accept json
+// @Produce json
+// @Param request body ChatRequest true "Chat completion request"
+// @Param stream query boolean false "Enable streaming response (returns newline-delimited JSON chunks)"
+// @Success 200 {object} ChatResponse "Successfully generated completion (non-streaming)"
+// @Success 200 {object} StreamDelta "Successfully generated completion chunk (streaming)"
+// @Failure 400 {object} ErrorResponse "Invalid request body"
+// @Failure 500 {object} ErrorResponse "OpenAI API error"
+// @Router /chat/text [post]
 func completions(w http.ResponseWriter, r *http.Request) {
 	var req ChatRequest
 	stream := r.URL.Query().Get("stream")

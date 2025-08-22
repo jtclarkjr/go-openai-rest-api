@@ -2,6 +2,29 @@
 
 Go OpenAI REST API
 
+## API Documentation
+
+This API includes interactive Swagger documentation. Once the server is running, you can access it at:
+
+- **Swagger UI**: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
+- **Raw OpenAPI Spec**: [http://localhost:8080/swagger/doc.json](http://localhost:8080/swagger/doc.json)
+
+The Swagger UI provides a complete interactive interface to test all API endpoints directly from your browser.
+
+### Regenerating Documentation
+
+If you modify API endpoints or add new ones, regenerate the documentation with:
+
+```bash
+swag init
+```
+
+**Note**: Make sure you have the `swag` tool installed:
+
+```bash
+go install github.com/swaggo/swag/cmd/swag@latest
+```
+
 ## Chat (GPT-5 via SDK)
 
 `POST /chat/text`

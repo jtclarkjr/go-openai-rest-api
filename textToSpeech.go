@@ -11,6 +11,17 @@ import (
 	"github.com/openai/openai-go/v2"
 )
 
+// ttsController converts text to speech
+// @Summary Convert text to speech
+// @Description Convert text to speech using OpenAI's TTS model and save the audio file
+// @Tags audio
+// @Accept json
+// @Produce application/octet-stream
+// @Param request body TTSInput true "Text-to-speech request"
+// @Success 200 {object} MediaFile "Successfully generated speech audio"
+// @Failure 400 {object} ErrorResponse "Invalid request body"
+// @Failure 500 {object} ErrorResponse "TTS generation failed"
+// @Router /tts [post]
 func ttsController(w http.ResponseWriter, r *http.Request) {
 
 	var input TTSInput

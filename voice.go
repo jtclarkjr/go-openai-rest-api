@@ -11,7 +11,17 @@ import (
 	"github.com/openai/openai-go/v2"
 )
 
-// ChatGPT voice assistant
+// textVoiceChat generates text completion and converts it to speech
+// @Summary Generate text response and convert to audio
+// @Description Generate a chat completion using GPT-5 and convert the response to speech audio
+// @Tags chat
+// @Accept json
+// @Produce application/octet-stream
+// @Param request body ChatRequest true "Chat request with optional voice parameter"
+// @Success 200 {object} MediaFile "Successfully generated audio response"
+// @Failure 400 {object} ErrorResponse "Invalid request body"
+// @Failure 500 {object} ErrorResponse "Failed to generate completion or TTS"
+// @Router /chat/text_audio [post]
 func textVoiceChat(w http.ResponseWriter, r *http.Request) {
 	var req ChatRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

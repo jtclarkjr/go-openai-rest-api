@@ -27,30 +27,62 @@ var (
 
 var openAIClient openai.Client
 
+// MediaFile represents a media file stored in S3
 type MediaFile struct {
-	ID       string `json:"id"`
-	S3URL    string `json:"s3_url"`
-	Filename string `json:"filename"`
+	ID       string `json:"id" example:"12345" description:"Unique identifier for the media file"`
+	S3URL    string `json:"s3_url" example:"https://s3.amazonaws.com/bucket/file.wav" description:"S3 URL for the media file"`
+	Filename string `json:"filename" example:"output.wav" description:"Original filename"`
 }
 
+// TTSInput represents input for text-to-speech conversion
 type TTSInput struct {
-	Input string `json:"input"`
-	Voice string `json:"voice,omitempty"`
+	Input string `json:"input" binding:"required" example:"Hello world" description:"Text to convert to speech"`
+	Voice string `json:"voice,omitempty" example:"alloy" description:"Voice to use for synthesis (alloy, ash, ballad, coral, echo, sage, shimmer, verse)"`
 }
 
+// TTSRequest represents a text-to-speech request
 type TTSRequest struct {
-	Model string `json:"model"`
-	Voice string `json:"voice"`
-	Input string `json:"input"`
+	Model string `json:"model" example:"tts-1" description:"TTS model to use"`
+	Voice string `json:"voice" example:"alloy" description:"Voice for synthesis"`
+	Input string `json:"input" example:"Hello world" description:"Text to synthesize"`
 }
 
+// WhisperResponse represents the response from speech-to-text transcription
 type WhisperResponse struct {
-	Text string `json:"text"`
+	Text string `json:"text" example:"Hello, how are you?" description:"Transcribed text from audio"`
 }
 
+// ChatRequest represents a chat completion request
 type ChatRequest struct {
-	Prompt string `json:"prompt"`
-	Voice  string `json:"voice,omitempty"`
+	Prompt string `json:"prompt" binding:"required" example:"What is the weather today?" description:"The prompt for the chat completion"`
+	Voice  string `json:"voice,omitempty" example:"alloy" description:"Voice for audio response (if applicable)"`
+}
+
+// ChatResponse represents a chat completion response
+type ChatResponse struct {
+	Content string `json:"content" example:"The weather today is sunny and warm." description:"The AI-generated response"`
+}
+
+// StreamDelta represents a streaming response chunk
+type StreamDelta struct {
+	Delta string `json:"delta" example:"Hello" description:"Partial response content"`
+}
+
+// ImageRequest represents an image generation request
+type ImageRequest struct {
+	Prompt string `json:"prompt" binding:"required" example:"A beautiful sunset over mountains" description:"Description of the image to generate"`
+}
+
+// ImageResponse represents an image generation response
+type ImageResponse struct {
+	ID            int    `json:"id" example:"1723223344" description:"Timestamp ID for the generated image"`
+	RevisedPrompt string `json:"prompt" example:"A beautiful sunset over mountains with vibrant colors" description:"The possibly revised prompt used for generation"`
+	URL           string `json:"url" example:"https://oaidalleapiprodscus.blob.core.windows.net/private/..." description:"URL to download the generated image"`
+}
+
+// ErrorResponse represents an error response
+type ErrorResponse struct {
+	Message string `json:"message" example:"Invalid request body" description:"Error message"`
 }
 
 func init() {

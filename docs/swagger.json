@@ -1,0 +1,423 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "A REST API for OpenAI services including chat completions, image generation, text-to-speech, and speech-to-text.",
+        "title": "OpenAI REST API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/chat/audio": {
+            "post": {
+                "description": "Transcribe audio input, generate chat completion, and return speech response",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "chat"
+                ],
+                "summary": "Audio-to-audio chat",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Audio file to transcribe",
+                        "name": "audio",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully processed audio and generated response",
+                        "schema": {
+                            "$ref": "#/definitions/main.MediaFile"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid audio file",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to process audio or generate response",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/chat/text": {
+            "post": {
+                "description": "Generate a chat completion using OpenAI's GPT-5 model. Supports both streaming and non-streaming responses.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chat"
+                ],
+                "summary": "Generate chat completion",
+                "parameters": [
+                    {
+                        "description": "Chat completion request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.ChatRequest"
+                        }
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Enable streaming response (returns newline-delimited JSON chunks)",
+                        "name": "stream",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully generated completion chunk (streaming)",
+                        "schema": {
+                            "$ref": "#/definitions/main.StreamDelta"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "OpenAI API error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/chat/text_audio": {
+            "post": {
+                "description": "Generate a chat completion using GPT-5 and convert the response to speech audio",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "chat"
+                ],
+                "summary": "Generate text response and convert to audio",
+                "parameters": [
+                    {
+                        "description": "Chat request with optional voice parameter",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.ChatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully generated audio response",
+                        "schema": {
+                            "$ref": "#/definitions/main.MediaFile"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to generate completion or TTS",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/image": {
+            "post": {
+                "description": "Generate an image using OpenAI's DALL-E model based on a text prompt",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "images"
+                ],
+                "summary": "Generate an image from text prompt",
+                "parameters": [
+                    {
+                        "description": "Image generation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.ImageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully generated image",
+                        "schema": {
+                            "$ref": "#/definitions/main.ImageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to generate image",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stt": {
+            "post": {
+                "description": "Transcribe an audio file to text using OpenAI's Whisper model",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "audio"
+                ],
+                "summary": "Transcribe audio to text",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Audio file to transcribe",
+                        "name": "audio",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully transcribed audio",
+                        "schema": {
+                            "$ref": "#/definitions/main.WhisperResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid audio file or form data",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to transcribe audio",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tts": {
+            "post": {
+                "description": "Convert text to speech using OpenAI's TTS model and save the audio file",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "audio"
+                ],
+                "summary": "Convert text to speech",
+                "parameters": [
+                    {
+                        "description": "Text-to-speech request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.TTSInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully generated speech audio",
+                        "schema": {
+                            "$ref": "#/definitions/main.MediaFile"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "TTS generation failed",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "main.ChatRequest": {
+            "type": "object",
+            "required": [
+                "prompt"
+            ],
+            "properties": {
+                "prompt": {
+                    "type": "string",
+                    "example": "What is the weather today?"
+                },
+                "voice": {
+                    "type": "string",
+                    "example": "alloy"
+                }
+            }
+        },
+        "main.ChatResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "The weather today is sunny and warm."
+                }
+            }
+        },
+        "main.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Invalid request body"
+                }
+            }
+        },
+        "main.ImageRequest": {
+            "type": "object",
+            "required": [
+                "prompt"
+            ],
+            "properties": {
+                "prompt": {
+                    "type": "string",
+                    "example": "A beautiful sunset over mountains"
+                }
+            }
+        },
+        "main.ImageResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1723223344
+                },
+                "prompt": {
+                    "type": "string",
+                    "example": "A beautiful sunset over mountains with vibrant colors"
+                },
+                "url": {
+                    "type": "string",
+                    "example": "https://oaidalleapiprodscus.blob.core.windows.net/private/..."
+                }
+            }
+        },
+        "main.MediaFile": {
+            "type": "object",
+            "properties": {
+                "filename": {
+                    "type": "string",
+                    "example": "output.wav"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "12345"
+                },
+                "s3_url": {
+                    "type": "string",
+                    "example": "https://s3.amazonaws.com/bucket/file.wav"
+                }
+            }
+        },
+        "main.StreamDelta": {
+            "type": "object",
+            "properties": {
+                "delta": {
+                    "type": "string",
+                    "example": "Hello"
+                }
+            }
+        },
+        "main.TTSInput": {
+            "type": "object",
+            "required": [
+                "input"
+            ],
+            "properties": {
+                "input": {
+                    "type": "string",
+                    "example": "Hello world"
+                },
+                "voice": {
+                    "type": "string",
+                    "example": "alloy"
+                }
+            }
+        },
+        "main.WhisperResponse": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "example": "Hello, how are you?"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

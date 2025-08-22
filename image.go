@@ -9,18 +9,17 @@ import (
 	"github.com/openai/openai-go/v2"
 )
 
-// ImageRequest struct to parse incoming image generation requests
-type ImageRequest struct {
-	Prompt string `json:"prompt"`
-}
-
-// ImageResponse struct to format the response payload
-type ImageResponse struct {
-	ID            int    `json:"id"`
-	RevisedPrompt string `json:"prompt"`
-	URL           string `json:"url"`
-}
-
+// imageGenerate generates an image using OpenAI's DALL-E
+// @Summary Generate an image from text prompt
+// @Description Generate an image using OpenAI's DALL-E model based on a text prompt
+// @Tags images
+// @Accept json
+// @Produce json
+// @Param request body ImageRequest true "Image generation request"
+// @Success 200 {object} ImageResponse "Successfully generated image"
+// @Failure 400 {object} ErrorResponse "Invalid request body"
+// @Failure 500 {object} ErrorResponse "Failed to generate image"
+// @Router /image [post]
 func imageGenerate(w http.ResponseWriter, r *http.Request) {
 	var req ImageRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

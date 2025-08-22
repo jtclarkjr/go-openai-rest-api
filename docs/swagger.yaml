@@ -1,0 +1,287 @@
+basePath: /
+definitions:
+  main.ChatRequest:
+    properties:
+      prompt:
+        example: What is the weather today?
+        type: string
+      voice:
+        example: alloy
+        type: string
+    required:
+    - prompt
+    type: object
+  main.ChatResponse:
+    properties:
+      content:
+        example: The weather today is sunny and warm.
+        type: string
+    type: object
+  main.ErrorResponse:
+    properties:
+      message:
+        example: Invalid request body
+        type: string
+    type: object
+  main.ImageRequest:
+    properties:
+      prompt:
+        example: A beautiful sunset over mountains
+        type: string
+    required:
+    - prompt
+    type: object
+  main.ImageResponse:
+    properties:
+      id:
+        example: 1723223344
+        type: integer
+      prompt:
+        example: A beautiful sunset over mountains with vibrant colors
+        type: string
+      url:
+        example: https://oaidalleapiprodscus.blob.core.windows.net/private/...
+        type: string
+    type: object
+  main.MediaFile:
+    properties:
+      filename:
+        example: output.wav
+        type: string
+      id:
+        example: "12345"
+        type: string
+      s3_url:
+        example: https://s3.amazonaws.com/bucket/file.wav
+        type: string
+    type: object
+  main.StreamDelta:
+    properties:
+      delta:
+        example: Hello
+        type: string
+    type: object
+  main.TTSInput:
+    properties:
+      input:
+        example: Hello world
+        type: string
+      voice:
+        example: alloy
+        type: string
+    required:
+    - input
+    type: object
+  main.WhisperResponse:
+    properties:
+      text:
+        example: Hello, how are you?
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: A REST API for OpenAI services including chat completions, image generation,
+    text-to-speech, and speech-to-text.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: OpenAI REST API
+  version: "1.0"
+paths:
+  /chat/audio:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Transcribe audio input, generate chat completion, and return speech
+        response
+      parameters:
+      - description: Audio file to transcribe
+        in: formData
+        name: audio
+        required: true
+        type: file
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: Successfully processed audio and generated response
+          schema:
+            $ref: '#/definitions/main.MediaFile'
+        "400":
+          description: Invalid audio file
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Failed to process audio or generate response
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Audio-to-audio chat
+      tags:
+      - chat
+  /chat/text:
+    post:
+      consumes:
+      - application/json
+      description: Generate a chat completion using OpenAI's GPT-5 model. Supports
+        both streaming and non-streaming responses.
+      parameters:
+      - description: Chat completion request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/main.ChatRequest'
+      - description: Enable streaming response (returns newline-delimited JSON chunks)
+        in: query
+        name: stream
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully generated completion chunk (streaming)
+          schema:
+            $ref: '#/definitions/main.StreamDelta'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: OpenAI API error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Generate chat completion
+      tags:
+      - chat
+  /chat/text_audio:
+    post:
+      consumes:
+      - application/json
+      description: Generate a chat completion using GPT-5 and convert the response
+        to speech audio
+      parameters:
+      - description: Chat request with optional voice parameter
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/main.ChatRequest'
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: Successfully generated audio response
+          schema:
+            $ref: '#/definitions/main.MediaFile'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Failed to generate completion or TTS
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Generate text response and convert to audio
+      tags:
+      - chat
+  /image:
+    post:
+      consumes:
+      - application/json
+      description: Generate an image using OpenAI's DALL-E model based on a text prompt
+      parameters:
+      - description: Image generation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/main.ImageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully generated image
+          schema:
+            $ref: '#/definitions/main.ImageResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Failed to generate image
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Generate an image from text prompt
+      tags:
+      - images
+  /stt:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Transcribe an audio file to text using OpenAI's Whisper model
+      parameters:
+      - description: Audio file to transcribe
+        in: formData
+        name: audio
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully transcribed audio
+          schema:
+            $ref: '#/definitions/main.WhisperResponse'
+        "400":
+          description: Invalid audio file or form data
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Failed to transcribe audio
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Transcribe audio to text
+      tags:
+      - audio
+  /tts:
+    post:
+      consumes:
+      - application/json
+      description: Convert text to speech using OpenAI's TTS model and save the audio
+        file
+      parameters:
+      - description: Text-to-speech request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/main.TTSInput'
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: Successfully generated speech audio
+          schema:
+            $ref: '#/definitions/main.MediaFile'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: TTS generation failed
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Convert text to speech
+      tags:
+      - audio
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

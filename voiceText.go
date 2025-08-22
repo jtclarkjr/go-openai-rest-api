@@ -15,6 +15,17 @@ import (
 	"github.com/openai/openai-go/v2"
 )
 
+// voiceChatFromAudio processes audio input and returns audio response
+// @Summary Audio-to-audio chat
+// @Description Transcribe audio input, generate chat completion, and return speech response
+// @Tags chat
+// @Accept multipart/form-data
+// @Produce application/octet-stream
+// @Param audio formData file true "Audio file to transcribe"
+// @Success 200 {object} MediaFile "Successfully processed audio and generated response"
+// @Failure 400 {object} ErrorResponse "Invalid audio file"
+// @Failure 500 {object} ErrorResponse "Failed to process audio or generate response"
+// @Router /chat/audio [post]
 func voiceChatFromAudio(w http.ResponseWriter, r *http.Request) {
 	file, _, err := r.FormFile("audio")
 	if err != nil {
@@ -55,6 +66,17 @@ func voiceChatFromAudio(w http.ResponseWriter, r *http.Request) {
 	textVoiceChat(w, r)
 }
 
+// transcribeToAudio transcribes audio to text
+// @Summary Transcribe audio to text
+// @Description Transcribe an audio file to text using OpenAI's Whisper model
+// @Tags audio
+// @Accept multipart/form-data
+// @Produce json
+// @Param audio formData file true "Audio file to transcribe"
+// @Success 200 {object} WhisperResponse "Successfully transcribed audio"
+// @Failure 400 {object} ErrorResponse "Invalid audio file or form data"
+// @Failure 500 {object} ErrorResponse "Failed to transcribe audio"
+// @Router /stt [post]
 func transcribeToAudio(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(10 << 20) // 10 MB
 	if err != nil {
